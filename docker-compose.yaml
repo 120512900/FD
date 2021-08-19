@@ -1,0 +1,47 @@
+version: '3.0'
+services:
+   mysql:
+     container_name: mysql
+     image: mysql
+     ports:
+       - "3306:3306"
+     volumes:
+             - ./config/mysql/my.cnf:/etcmysql/conf.d/mycnf
+             - ./data/mysql/:/var/lib/mysql/
+             - ./data/init:/all.sql/
+             - ./log/maysql/:/var/log/mysql/
+     restart: always
+     environment:
+       TZ: Asia/Shanghai
+       MYSQL_ROOT_PASSWORD: c0nygre
+       MYSQL_DATABASE: demo
+     command: --explicit_defaults_for_timestamp
+
+   redis:
+     container_name: redis
+     image: "library/redis:alpine"
+     environment:
+       - TZ=Asia/Shanghai
+     ports:
+       - "6379:6379"
+     volumes:
+                - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf                                                                                                                                                      
+                - ./data/redis/:/data/                                                                                                                                                                                           
+                - ./log/redis/:/var/log/redis/                                                                                                                                                                           
+     command: redis-server /usr/local/etc/redis/redis.conf                                                                                                                                                            
+     restart: always                                                                                                                                                                                                                                                                                                                                                                                                                 
+   app:                                                                                                                                                     
+     container_name: app                                                                                                                                                                                              
+     build:                                                                                                                                                                                                             
+       context: .                                                                                                                                                                                                       
+       dockerfile: Dockerfile-app                                                                                                                                                                                     
+     ports:                                                                                                                                                                                                             
+       - "8081:8081"                                                                                                                                                                                                  
+     links:                                                                                                                                                                                                             
+       - redis:redis                                                                                                                                                                                                    
+       - mysql:mysql                                                                                                                                                                                                  
+     depends_on:                                                                                                                                                                                                        
+       - redis                                                                                                                                                                                                          
+       - mysql                                                                                                                                                                                                        
+     restart: always     
+                                                 
